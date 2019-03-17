@@ -17,7 +17,9 @@ CircleCI를 도입하기 위해 가장 먼저 해야할 점은, 진행중인 프
 1. root directory에 `.circleci`  폴더 생성
 2. 해당 폴더 아래,  `config.yml` 파일 생성
 
-![directory](./image/1.png)다음과 같은 폴더구조를 가진다.
+![directory](./image/1.png)
+
+다음과 같은 폴더구조를 가진다.
 
 
 
@@ -38,23 +40,22 @@ version: 2.1
 ~~~
 
 
-
 ### Jobs
 
 circleci는 1개 이상의 job을 수행합니다. 수행할 작업은 모두 `jobs`에서 정의되어야합니다.  `jobs`는 다음과 같은 구조를 가집니다.
 
-~~~
+~~~yaml
 jobs
-	<job_name>
-		docker
-		steps
-			run
-			checkout
-			save_cache
-			restore_cache
-			deploy
-			persist_to_workspace
-			attach_workspace
+  <job_name>
+    docker
+      steps
+        run
+        checkout
+        save_cache
+        restore_cache
+        deploy
+        persist_to_workspace
+        attach_workspace
 ~~~
 
 (jobs가 가질 수 있는 속성들 중에 예제에 사용하는 속성들로 재구성하였습니다. [전체 속성 확인하기](https://circleci.com/docs/2.0/configuration-reference/#jobs)) 
@@ -67,11 +68,11 @@ jobs
 
 circleci 2.X 버전의 장점은 `docker`를 natvie로 지원하는 점입니다. 저는 **node 8.10 버전**으로 주로 개발을 해왔기 때문에 다음과 같이 작성해주었습니다. circleci에서 제공하는 docker image는 [여기서](https://hub.docker.com/u/circleci) 확인할 수 있으니, 각자 개발 환경에 맞춰 작성해주시면 됩니다.
 
-~~~yaml
+~~~yml
 jobs:
-	build:
-		docker:
-			- image: circleci/node:8.10
+  build:
+    docker:
+      - image: circleci/node:8.10
 ~~~
 
 또한 각자 필요에 따라  `dockerfile`를 작성해 사용할 수 있습니다.
@@ -82,24 +83,26 @@ jobs:
 
 앞서 우리가 docker image로 사용한 **circleci/node:8.10**에는 **Yarn**이 미리 설치되어있기에  **Yarn** 설치과정은 생략해도 됩니다. 총 3단계의 **job**을 작성해보았고, `build` `test` `deploy` 로 구성되어 있습니다. 
 
+
 1. **install**
 
 가장 먼저 진행되어야하는 작업은 패키지 설치/업데이트입니다.
 
-~~~yaml
+~~~yml
 jobs:
-	install:
-		steps:
-			- run:
-					name: install
-					command: yarn install
+  install:
+    steps:
+      - run:
+        name: install
+        command: yarn install
+
 ~~~
 
  **Yarn** 을 사용하는 가장 중요한 점은 `cache` 입니다. Yarn 패키지는 캐싱을 통해 CI 빌드 시간을 단축시켜줍니다. 따라서 다음 코드를 추가해줍시다.
 
-~~~yaml
+~~~yml
 #...
-			- restore_cache:
+      - restore_cache:
           name: Restore Yarn Package Cache
           keys:
             - yarn-packages-{{ checksum "yarn.lock" }}
@@ -113,6 +116,7 @@ jobs:
             - ~/.cache/yarn
 #...
 ~~~
+
 
 
 
@@ -131,15 +135,16 @@ jobs:
 }
 ~~~
 
-~~~yaml
+~~~yml
 # config.yml
 jobs:
-	test:
-		steps:
-			- run:
-					name: running tests
-					command: yarn run test
+  test:
+    steps:
+      - run:
+        name: running tests
+        command: yarn run test
 ~~~
+
 
 
 
@@ -162,11 +167,11 @@ jobs:
 ~~~yml
 # config.yml
 jobs:
-	deploy:
-		steps:
-			- run:
-					name: deploy!
-					command: yarn deploy
+  deploy:
+    steps:
+      - run:
+        name: deploy!
+        command: yarn deploy
 ~~~
 
 
@@ -175,14 +180,14 @@ jobs:
 
 `workflow`는 `jobs`에 정의된 모든 것을 조합해서 사용할 수 있도록 해줍니다. Workflow 또한 유일한 이름을 가지고 있어야하며, 다음과 같은 구조를 가집니다.
 
-~~~yaml
+~~~yml
 workflows
-	version
-	<workflow_name>
-		jobs
-			<job_name>
-				requires
-				filters
+  version
+    <workflow_name>
+      jobs
+        <job_name>
+          requires
+          filters
 ~~~
 
 (workflow가 가질 수 있는 속성들 중에 예제에 사용하는 속성들로 재구성하였습니다. [전체 속성 확인하기](https://circleci.com/docs/2.0/configuration-reference/#workflows)) 
@@ -200,9 +205,9 @@ workflows
 
 #### Version
 
-~~~yaml
+~~~yml
 workflows:
-	version: 2.1
+  version: 2.1
 ~~~
 
 job에서 사용하는 버전과 같은 버전을 사용하면 됩니다.
@@ -221,6 +226,7 @@ workflow는 1개 이상으로 구성됩니다. 위와 같은 시나리오를 거
 
 `build-test-deploy` 라는 이름을 가진 workflow를 작성한다고 가정해봅시다. **Jobs**는 기본적으로 병행되므로, 위와 같이 단계를 거치게 될 경우, **requires** 옵션을 꼭 적어주어야합니다. 
 
+<br />
 
 
 1. **install**
@@ -243,7 +249,7 @@ workflow는 1개 이상으로 구성됩니다. 위와 같은 시나리오를 거
 
 `only`와 일치하는 branches들만 `deploy` 를 실행하고 `ignore`과 일치하는 branches들만 `deploy` 를 실행하지 않도록 설정할 수 있습니다.
 
-~~~yaml
+~~~yml
 workflows:
   version: 2.1
 
