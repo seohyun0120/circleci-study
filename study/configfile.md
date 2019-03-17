@@ -1,11 +1,11 @@
-### Configuring CircleCI
+## Configuring CircleCI
 
 CircleCI를 도입하기 위해 가장 먼저 해야할 점은, 진행중인 프로젝트에 **폴더**를 만드는 것입니다. 
 
 1. root directory에 `.circleci`  폴더 생성
 2. 해당 폴더 아래,  `config.yml` 파일 생성
 
-![directory](/Users/scorpion/Developments/project/circleci-study/image/1.png)
+![폴더구조](../image/1.png)
 
 다음과 같은 폴더구조를 가진다.
 
@@ -26,6 +26,8 @@ CircleCI를 도입하기 위해 가장 먼저 해야할 점은, 진행중인 프
 ```yml
 version: 2.1
 ```
+
+
 
 ### Jobs
 
@@ -157,6 +159,8 @@ jobs:
         name: deploy!
         command: yarn deploy
 ```
+
+
 
 
 
