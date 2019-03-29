@@ -41,21 +41,21 @@ workflow를 통해 job을 나누게 되면, 각각의 job은 격리된 상태로
 ~~~yaml
 version: 2.1
 jobs:
-	install:
-		working_directory: ~/project_name #해당 프로젝트의 이름을 적어주면 된다.
-		docker:
-			- image: circleci/node:8.10
-		steps:
-			- checkout
-			- restore_cache:
+  install:
+    working_directory: ~/project_name #해당 프로젝트의 이름을 적어주면 된다.
+    docker:
+      - image: circleci/node:8.10
+    steps:
+      - checkout
+      - restore_cache:
           key: yarn-v1-{{ checksum "yarn.lock" }}-{{ arch }}
 
       - restore_cache:
           key: node-v1-{{ checksum "package.json" }}-{{ arch }}
 
       - run: 
-      		name: yarn install
-      		command: yarn install --frozen-lockfile
+          name: yarn install
+          command: yarn install --frozen-lockfile
 
       - save_cache:
           key: yarn-v1-{{ checksum "yarn.lock" }}-{{ arch }}
@@ -65,25 +65,25 @@ jobs:
       - save_cache:
           key: node-v1-{{ checksum "package.json" }}-{{ arch }}
           paths:
-            - node_modules
+            - node_module
 
-			- persist_to_workspace:
+      - persist_to_workspace:
           root: .
           # workspace의 root path (.을 적어주면 working_directory에 적힌 설정을 그대로 따른다.)
           paths:
             - . 
-					# 공유할 path
+          # 공유할 path
 
-	test:
-		working_directory: ~/project_name
-		docker:
-			- image: circleci/node:8.10
-		steps:
-			- attach_workspace:
-					at: .
-					# 위에서 지정한 workspace를 붙여준다.
+    test:
+      working_directory: ~/project_name
+      docker:
+        - image: circleci/node:8.10
+      steps:
+        - attach_workspace:
+          at: .
+          # 위에서 지정한 workspace를 붙여준다.
 
-			- run:
+        - run:
           name: jest tests
           command: yarn run test include
 ~~~
@@ -134,17 +134,17 @@ attach_workspace: &attach_workspace
     
 version: 2.1
 jobs:
-	install:
-		<<: *defaults
-		steps:
-		# ...
-		
-	test:
-		<<: *defaults
-		steps:
-			- *attach_workspace
-			- run
-			# ...
+  install:
+    <<: *defaults
+    steps:
+      # ...
+
+  test:
+    <<: *defaults
+    steps:
+      - *attach_workspace
+      - run
+      # ...
 ~~~
 
 
